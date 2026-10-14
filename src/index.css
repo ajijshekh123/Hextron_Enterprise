@@ -1,0 +1,7 @@
+/* Import modular stylesheet architecture */
+@import './styles/global.css';
+@import './styles/header.css';
+@import './styles/hero.css';
+@import './styles/sections.css';
+@import './styles/forms.css';
+@import './styles/footer.css';

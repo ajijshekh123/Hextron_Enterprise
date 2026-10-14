@@ -1,0 +1,217 @@
+:root {
+  /* Hextron Enterprises Core Brand Palette */
+  --color-primary: #061A36;
+  --color-primary-dark: #030D1C;
+  --color-primary-light: #0D2B57;
+  --color-secondary: #0878F9;
+  --color-secondary-hover: #0060CE;
+  --color-secondary-light: #419BFF;
+  --color-secondary-subtle: rgba(8, 120, 249, 0.08);
+  --color-secondary-border: rgba(8, 120, 249, 0.22);
+  --color-secondary-glow: rgba(8, 120, 249, 0.35);
+
+  /* Metallic Silver & Industrial Gradients */
+  --color-silver: #94A3B8;
+  --color-silver-light: #CBD5E1;
+  --color-silver-soft: #E2E8F0;
+  --gradient-metallic: linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 50%, #94A3B8 100%);
+  --gradient-dark-navy: linear-gradient(180deg, #061A36 0%, #030D1C 100%);
+  --gradient-blue-glow: radial-gradient(circle at 50% 30%, rgba(8, 120, 249, 0.15) 0%, transparent 70%);
+
+  /* Backgrounds & Surfaces */
+  --bg-page: #FFFFFF;
+  --bg-alt: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --bg-dark-card: rgba(13, 43, 87, 0.6);
+  --border-color: #E2E8F0;
+  --border-light: #F1F5F9;
+  --border-dark: rgba(255, 255, 255, 0.12);
+
+  /* Typography */
+  --color-text-heading: #061A36;
+  --color-text-body: #334155;
+  --color-text-muted: #64748B;
+  --color-text-on-dark: #F8FAFC;
+  --color-text-muted-dark: #94A3B8;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
+  --font-mono: 'Space Grotesk', monospace;
+
+  /* Elevations & Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(6, 26, 54, 0.05);
+  --shadow-sm: 0 2px 4px 0 rgba(6, 26, 54, 0.06);
+  --shadow-md: 0 6px 12px -2px rgba(6, 26, 54, 0.08), 0 3px 6px -3px rgba(6, 26, 54, 0.04);
+  --shadow-lg: 0 14px 24px -4px rgba(6, 26, 54, 0.1), 0 6px 10px -4px rgba(6, 26, 54, 0.05);
+  --shadow-xl: 0 24px 38px -6px rgba(6, 26, 54, 0.14), 0 10px 16px -6px rgba(6, 26, 54, 0.06);
+  --shadow-card-hover: 0 20px 30px -8px rgba(8, 120, 249, 0.12), 0 8px 12px -4px rgba(6, 26, 54, 0.06);
+
+  /* Layout & Sizing */
+  --container-max: 1240px;
+  --container-padding: 1.5rem;
+  --header-height: 80px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Base Styles & Resets */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-sans);
+  color: var(--color-text-body);
+  background-color: var(--bg-page);
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+img, picture, svg, video {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input, textarea, select {
+  font-family: inherit;
+}
+
+/* Accessible Focus Ring */
+:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 3px;
+}
+
+/* Common Container */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--container-padding);
+  padding-right: var(--container-padding);
+}
+
+/* Typography Utilities */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--color-text-heading);
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #0878F9 0%, #3B95FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-metallic {
+  background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 50%, #94A3B8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-family: var(--font-sans);
+}
+
+.badge-blue {
+  background-color: var(--color-secondary-subtle);
+  color: var(--color-secondary);
+  border: 1px solid var(--color-secondary-border);
+}
+
+.badge-dark {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #E2E8F0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.badge-verified {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.badge-amber {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #D97706;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+/* Section Wrapper Base */
+.section-wrapper {
+  padding: 5.5rem 0;
+  position: relative;
+}
+
+.section-wrapper.bg-alt {
+  background-color: var(--bg-alt);
+}
+
+.section-wrapper.bg-dark {
+  background: var(--gradient-dark-navy);
+  color: var(--color-text-on-dark);
+}
+
+.section-wrapper.bg-dark h2,
+.section-wrapper.bg-dark h3 {
+  color: var(--color-text-on-dark);
+}
+
+.section-wrapper.bg-dark p {
+  color: var(--color-text-muted-dark);
+}
+
+/* Offset for Sticky Header Anchors */
+section[id] {
+  scroll-margin-top: calc(var(--header-height) + 16px);
+}
+
+/* Reduced Motion Preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
