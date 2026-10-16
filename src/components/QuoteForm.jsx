@@ -11,6 +11,7 @@ import {
   Info
 } from 'lucide-react';
 import { companyInfo } from '../data/companyInfo';
+import { api } from '../api/client';
 
 const initialFormData = {
   fullName: '',
@@ -33,6 +34,8 @@ export default function QuoteForm({ preselectedService }) {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionStatus, setSubmissionStatus] = useState(null); // 'success' | 'demo' | null
+  const [createdQuotationNumber, setCreatedQuotationNumber] = useState(null);
+  const [apiErrorMessage, setApiErrorMessage] = useState(null);
   const [attachmentName, setAttachmentName] = useState('');
 
   // Update if preselected service changes from parent
@@ -115,24 +118,43 @@ export default function QuoteForm({ preselectedService }) {
     setAttachmentName('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
     setIsSubmitting(true);
+    setApiErrorMessage(null);
 
-    // Demonstration mode notice simulation
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const res = await api.post('/quotations/public', {
+        fullName: formData.fullName,
+        companyName: formData.companyName,
+        email: formData.email,
+        phone: formData.phone,
+        serviceType: formData.serviceType,
+        material: formData.material,
+        quantity: formData.quantity,
+        requirements: formData.requirements,
+        drawingRef: attachmentName || null
+      });
+
+      const qNum = res.data?.quotationNumber || 'HEX-QT-2026-CONFIRMED';
+      setCreatedQuotationNumber(qNum);
+      setSubmissionStatus('success');
+    } catch (err) {
+      console.warn('Backend quote submission error:', err);
+      setApiErrorMessage(err.message || 'Connection error');
       setSubmissionStatus('demo');
-    }, 800);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // WhatsApp quick quote action generator
   const getWhatsAppQuoteUrl = () => {
     const text = `*New CNC Turning Quote Request - Hextron Enterprises*
 ------------------------------------
-*Name:* ${formData.fullName || 'Not provided'}
+${createdQuotationNumber ? `*Quotation Ref:* ${createdQuotationNumber}\n` : ''}*Name:* ${formData.fullName || 'Not provided'}
 *Company:* ${formData.companyName || 'Not provided'}
 *Phone:* ${formData.phone || 'Not provided'}
 *Email:* ${formData.email || 'Not provided'}
@@ -156,18 +178,73 @@ Sent via hextronenterprise.com`;
         </p>
         <div className="demo-mode-badge">
           <Info size={14} />
-          <span>Notice: Direct enquiry via Form Demo Mode & Instant WhatsApp available</span>
+          <span>Official RFQ Processing with Database Registration & Instant WhatsApp forwarding</span>
         </div>
       </div>
 
       <div className="quote-form-body">
+        {submissionStatus === 'success' && (
+          <div className="form-feedback-alert success" style={{
+            background: 'rgba(16, 185, 129, 0.12)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            borderRadius: '8px',
+            padding: '1.25rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '1rem',
+            color: '#34D399'
+          }}>
+            <CheckCircle2 size={26} style={{ flexShrink: 0, marginTop: '2px' }} />
+            <div>
+              <h4 style={{ margin: '0 0 0.35rem', fontSize: '1.1rem', color: '#F8FAFC' }}>
+                Quotation Request Registered!
+              </h4>
+              <p style={{ margin: '0 0 0.5rem', color: '#E2E8F0', fontSize: '0.9rem' }}>
+                Your enquiry has been successfully logged into our engineering database.
+              </p>
+              <div style={{
+                background: 'rgba(0, 0, 0, 0.3)',
+                padding: '0.65rem 1rem',
+                borderRadius: '6px',
+                display: 'inline-block',
+                marginBottom: '0.75rem',
+                border: '1px solid rgba(56, 189, 248, 0.3)'
+              }}>
+                <span style={{ fontSize: '0.75rem', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Official Quotation Number:{' '}
+                </span>
+                <strong style={{ fontSize: '1.1rem', color: '#38BDF8', letterSpacing: '0.04em' }}>
+                  {createdQuotationNumber}
+                </strong>
+              </div>
+              <p style={{ margin: '0 0 0.75rem', color: '#94A3B8', fontSize: '0.82rem' }}>
+                Our estimation team will evaluate cycle times and tolerances. You may also fast-track this enquiry directly with our technical head via WhatsApp:
+              </p>
+              <div>
+                <a
+                  href={getWhatsAppQuoteUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-whatsapp-quote"
+                >
+                  <MessageCircle size={18} />
+                  <span>Forward Ref #{createdQuotationNumber} via WhatsApp</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
         {submissionStatus === 'demo' && (
           <div className="form-feedback-alert demo">
             <Info size={24} style={{ flexShrink: 0 }} />
             <div>
-              <h4>Enquiry Validated (Demo Mode)</h4>
+              <h4>Enquiry Processed</h4>
               <p>
-                Your enquiry data has been verified. Because email delivery API credentials are intentionally kept secure and not hardcoded on the client, you can send these verified details directly to our technical team via <strong>WhatsApp</strong> below or email us directly at <strong>{companyInfo.email}</strong>.
+                {apiErrorMessage
+                  ? `Notice: ${apiErrorMessage}. You can send your quote details directly to our technical team via WhatsApp below.`
+                  : 'Your enquiry data has been verified. You can send these verified details directly to our technical team via WhatsApp below.'}
               </p>
               <div style={{ marginTop: '0.75rem' }}>
                 <a

@@ -1,0 +1,267 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  SALES
+  EMPLOYEE
+}
+
+enum QuotationStatus {
+  NEW
+  UNDER_REVIEW
+  QUOTED
+  ACCEPTED
+  REJECTED
+  CLOSED
+}
+
+enum EnquiryStatus {
+  NEW
+  IN_PROGRESS
+  RESPONDED
+  CLOSED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(EMPLOYEE)
+  isActive     Boolean   @default(true)
+  employeeId   String?   @unique
+  employee     Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  notes        InternalNote[]
+  historyLogs  QuotationHistory[]
+
+  @@map("users")
+}
+
+model Employee {
+  id           String    @id @default(cuid())
+  employeeCode String    @unique
+  fullName     String
+  workEmail    String    @unique
+  phone        String
+  department   String
+  designation  String
+  joiningDate  DateTime?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user         User?
+  quotations   Quotation[]
+  enquiries    ContactEnquiry[]
+
+  @@map("employees")
+}
+
+model Customer {
+  id          String           @id @default(cuid())
+  fullName    String
+  companyName String?
+  email       String           @unique
+  phone       String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  quotations  Quotation[]
+  enquiries   ContactEnquiry[]
+
+  @@index([email])
+  @@index([companyName])
+  @@map("customers")
+}
+
+model Category {
+  id           String    @id @default(cuid())
+  name         String    @unique
+  slug         String    @unique
+  description  String?
+  imageUrl     String?
+  displayOrder Int       @default(0)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  products     Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id             String    @id @default(cuid())
+  sku            String    @unique
+  name           String
+  description    String
+  categoryId     String
+  category       Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  material       String
+  specifications String?
+  imageUrl       String?
+  isActive       Boolean   @default(true)
+  isPublic       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([categoryId])
+  @@index([material])
+  @@map("products")
+}
+
+model ContactEnquiry {
+  id                 String         @id @default(cuid())
+  name               String
+  companyName        String?
+  email              String
+  phone              String
+  subject            String
+  message            String
+  status             EnquiryStatus  @default(NEW)
+  assignedEmployeeId String?
+  assignedEmployee   Employee?      @relation(fields: [assignedEmployeeId], references: [id], onDelete: SetNull)
+  customerId         String?
+  customer           Customer?      @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  followUpDate       DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  internalNotes      InternalNote[]
+
+  @@index([status])
+  @@index([email])
+  @@index([createdAt])
+  @@map("contact_enquiries")
+}
+
+model Quotation {
+  id                 String           @id @default(cuid())
+  quotationNumber    String           @unique
+  customerId         String?
+  customer           Customer?        @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerName       String
+  companyName        String
+  email              String
+  phone              String
+  componentName      String
+  description        String?
+  materialType       String
+  quantity           Decimal          @default(1) @db.Decimal(10, 2)
+  drawingRef         String?
+  status             QuotationStatus  @default(NEW)
+
+  unitPrice          Decimal          @default(0.00) @db.Decimal(12, 2)
+  discountPercent    Decimal          @default(0.00) @db.Decimal(5, 2)
+  discountAmount     Decimal          @default(0.00) @db.Decimal(12, 2)
+  taxRate            Decimal          @default(18.00) @db.Decimal(5, 2)
+  taxAmount          Decimal          @default(0.00) @db.Decimal(12, 2)
+  subtotal           Decimal          @default(0.00) @db.Decimal(12, 2)
+  grandTotal         Decimal          @default(0.00) @db.Decimal(12, 2)
+
+  estimatedDelivery  String?
+  assignedEmployeeId String?
+  assignedEmployee   Employee?        @relation(fields: [assignedEmployeeId], references: [id], onDelete: SetNull)
+  isArchived         Boolean          @default(false)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  items              QuotationItem[]
+  history            QuotationHistory[]
+  internalNotes      InternalNote[]
+
+  @@index([status])
+  @@index([email])
+  @@index([quotationNumber])
+  @@index([createdAt])
+  @@map("quotations")
+}
+
+model QuotationItem {
+  id             String    @id @default(cuid())
+  quotationId    String
+  quotation      Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  itemOrder      Int       @default(1)
+  partName       String
+  description    String?
+  material       String?
+  quantity       Decimal   @default(1) @db.Decimal(10, 2)
+  unit           String    @default("PCS")
+  unitPrice      Decimal   @default(0.00) @db.Decimal(12, 2)
+  total          Decimal   @default(0.00) @db.Decimal(12, 2)
+  specifications String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([quotationId])
+  @@map("quotation_items")
+}
+
+model QuotationHistory {
+  id             String          @id @default(cuid())
+  quotationId    String
+  quotation      Quotation       @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  previousStatus QuotationStatus
+  newStatus      QuotationStatus
+  changedById    String?
+  changedBy      User?           @relation(fields: [changedById], references: [id], onDelete: SetNull)
+  changedByName  String
+  remarks        String?
+  createdAt      DateTime        @default(now())
+
+  @@index([quotationId])
+  @@map("quotation_history")
+}
+
+model InternalNote {
+  id          String          @id @default(cuid())
+  quotationId String?
+  quotation   Quotation?      @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  enquiryId   String?
+  enquiry     ContactEnquiry? @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  authorId    String?
+  author      User?           @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorName  String
+  note        String
+  createdAt   DateTime        @default(now())
+
+  @@index([quotationId])
+  @@index([enquiryId])
+  @@map("internal_notes")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  userEmail  String?
+  action     String
+  entityType String
+  entityId   String?
+  details    String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_settings")
+}

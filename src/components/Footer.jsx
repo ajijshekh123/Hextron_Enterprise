@@ -194,6 +194,11 @@ export default function Footer() {
                   </a>
                 </li>
                 <li>
+                  <a href="/products" className="footer-link">
+                    Products Catalog
+                  </a>
+                </li>
+                <li>
                   <a
                     href="#showcase"
                     className="footer-link"
@@ -203,12 +208,13 @@ export default function Footer() {
                   </a>
                 </li>
                 <li>
-                  <a
-                    href="#quote"
-                    className="footer-link"
-                    onClick={(e) => handleNavClick(e, '#quote')}
-                  >
+                  <a href="/quote" className="footer-link">
                     Request a Quote
+                  </a>
+                </li>
+                <li>
+                  <a href="/admin/dashboard" className="footer-link" style={{ color: '#38BDF8', fontWeight: 600 }}>
+                    Staff / Admin Portal &rarr;
                   </a>
                 </li>
               </ul>

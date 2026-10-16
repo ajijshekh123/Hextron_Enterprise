@@ -3,14 +3,13 @@ import { Menu, X, ArrowRight, Phone, Mail } from 'lucide-react';
 import { companyInfo } from '../data/companyInfo';
 
 const navItems = [
-  { label: 'Home', href: '#home' },
-  { label: 'About', href: '#about' },
-  { label: 'Services', href: '#services' },
-  { label: 'Materials', href: '#materials' },
-  { label: 'Industries', href: '#industries' },
-  { label: 'Why Choose Us', href: '#why-us' },
-  { label: 'Showcase', href: '#showcase' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'Home', href: '#home', path: '/' },
+  { label: 'About', href: '#about', path: '/#about' },
+  { label: 'Services', href: '#services', path: '/#services' },
+  { label: 'Products', href: '/products', path: '/products', isRoute: true },
+  { label: 'Materials', href: '#materials', path: '/#materials' },
+  { label: 'Industries', href: '#industries', path: '/#industries' },
+  { label: 'Contact', href: '#contact', path: '/#contact' },
 ];
 
 export default function Header() {
@@ -22,15 +21,17 @@ export default function Header() {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
 
-      // Track active section
-      const sections = navItems.map(item => item.href.substring(1));
-      const scrollPos = window.scrollY + 120;
+      // Track active section if on homepage
+      if (window.location.pathname === '/') {
+        const sections = navItems.filter(i => !i.isRoute).map(item => item.href.substring(1));
+        const scrollPos = window.scrollY + 120;
 
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const el = document.getElementById(sections[i]);
-        if (el && el.offsetTop <= scrollPos) {
-          setActiveSection(sections[i]);
-          break;
+        for (let i = sections.length - 1; i >= 0; i--) {
+          const el = document.getElementById(sections[i]);
+          if (el && el.offsetTop <= scrollPos) {
+            setActiveSection(sections[i]);
+            break;
+          }
         }
       }
     };
@@ -62,10 +63,22 @@ export default function Header() {
     };
   }, [mobileMenuOpen]);
 
-  const handleNavClick = (e, href) => {
-    e.preventDefault();
+  const handleNavClick = (e, item) => {
     setMobileMenuOpen(false);
-    const targetId = href.substring(1);
+
+    if (item.isRoute) {
+      // Let standard browser link navigation or window.location handle it
+      return;
+    }
+
+    if (window.location.pathname !== '/') {
+      // If not on homepage, navigate to homepage with hash
+      window.location.href = '/' + item.href;
+      return;
+    }
+
+    e.preventDefault();
+    const targetId = item.href.substring(1);
     const targetElement = document.getElementById(targetId);
     if (targetElement) {
       const headerOffset = 80;
@@ -85,9 +98,8 @@ export default function Header() {
         <div className="container header-container">
           {/* Logo */}
           <a
-            href="#home"
+            href="/"
             className="brand-link"
-            onClick={(e) => handleNavClick(e, '#home')}
             aria-label="Hextron Enterprises Homepage"
           >
             <img
@@ -102,39 +114,52 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="desktop-nav" aria-label="Main Navigation">
             <ul className="nav-links-list">
-              {navItems.slice(0, 5).map((item) => {
-                const sectionId = item.href.substring(1);
-                const isActive = activeSection === sectionId;
+              {navItems.map((item) => {
+                const isActive = item.isRoute
+                  ? window.location.pathname === item.path
+                  : activeSection === item.href.substring(1);
+
                 return (
                   <li key={item.href}>
                     <a
-                      href={item.href}
+                      href={item.isRoute ? item.path : item.href}
                       className={`nav-link ${isActive ? 'active' : ''}`}
-                      onClick={(e) => handleNavClick(e, item.href)}
+                      onClick={(e) => handleNavClick(e, item)}
                     >
                       {item.label}
                     </a>
                   </li>
                 );
               })}
-              <li>
-                <a
-                  href="#contact"
-                  className={`nav-link ${activeSection === 'contact' ? 'active' : ''}`}
-                  onClick={(e) => handleNavClick(e, '#contact')}
-                >
-                  Contact
-                </a>
-              </li>
             </ul>
           </nav>
 
-          {/* Header Action Button */}
-          <div className="header-actions">
+          {/* Header Action Buttons */}
+          <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <a
-              href="#quote"
+              href="/admin/dashboard"
+              className="header-portal-btn"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.55rem 0.85rem',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                color: '#38BDF8',
+                background: 'rgba(56, 189, 248, 0.1)',
+                border: '1px solid rgba(56, 189, 248, 0.3)',
+                borderRadius: '6px',
+                textDecoration: 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <span>Admin Portal</span>
+            </a>
+
+            <a
+              href="/quote"
               className="header-quote-btn"
-              onClick={(e) => handleNavClick(e, '#quote')}
             >
               <span>Request a Quote</span>
               <ArrowRight size={16} />
@@ -192,14 +217,15 @@ export default function Header() {
 
         <ul className="mobile-nav-list">
           {navItems.map((item) => {
-            const sectionId = item.href.substring(1);
-            const isActive = activeSection === sectionId;
+            const isActive = item.isRoute
+              ? window.location.pathname === item.path
+              : activeSection === item.href.substring(1);
             return (
               <li key={item.href}>
                 <a
-                  href={item.href}
+                  href={item.isRoute ? item.path : item.href}
                   className={`mobile-nav-link ${isActive ? 'active' : ''}`}
-                  onClick={(e) => handleNavClick(e, item.href)}
+                  onClick={(e) => handleNavClick(e, item)}
                 >
                   <span>{item.label}</span>
                   <ArrowRight size={15} style={{ opacity: isActive ? 1 : 0.4 }} />
@@ -211,12 +237,32 @@ export default function Header() {
 
         <div className="mobile-drawer-footer">
           <a
-            href="#quote"
+            href="/quote"
             className="mobile-cta-btn"
-            onClick={(e) => handleNavClick(e, '#quote')}
           >
             <span>Request a Quote</span>
             <ArrowRight size={18} />
+          </a>
+
+          <a
+            href="/admin/dashboard"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              padding: '0.65rem 1rem',
+              borderRadius: '6px',
+              background: 'rgba(56, 189, 248, 0.1)',
+              border: '1px solid rgba(56, 189, 248, 0.3)',
+              color: '#38BDF8',
+              textDecoration: 'none',
+              fontWeight: 600,
+              fontSize: '0.84rem',
+              marginTop: '0.65rem'
+            }}
+          >
+            <span>Staff & Admin Portal</span>
           </a>
 
           <div className="mobile-contact-quick">
